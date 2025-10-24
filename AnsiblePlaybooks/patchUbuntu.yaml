@@ -1,0 +1,23 @@
+---
+# Patch and reboot Ubuntu machines
+- name: Patch and reboot Ubuntu machine
+  hosts: inventory
+  gather_facts: yes
+  tasks:
+    - name: Update cache
+      apt:
+        update_cache: yes
+      when: ansible_os_family == "Debian"
+
+    - name: Upgrade all packages on servers
+      apt:
+        name: "*"
+        state: latest
+      register: apt_update_status
+      when: ansible_os_family == "Debian"
+
+    - name: "Reboot when packages are updated"
+      reboot:
+      when:
+        - apt_update_status.changed
+        - ansible_os_family == "Debian"
