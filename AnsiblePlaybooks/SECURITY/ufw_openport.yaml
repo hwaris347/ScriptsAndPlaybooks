@@ -1,0 +1,11 @@
+---
+- name: opens port via ufw
+  hosts: all
+  become: yes
+  gather_facts: true
+  tasks:
+    - name: Add port to firewalld
+      ufw:
+        rule: allow
+        port: '8080'
+        proto: tcp
