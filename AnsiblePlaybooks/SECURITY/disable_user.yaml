@@ -1,0 +1,12 @@
+---
+- name: Disabling a local user on a host. Replace name with relevant user
+  hosts: all
+  become: yes
+  gather_facts: true
+  tasks:
+    - name: User to be disabled
+      user:
+        name: username
+        state: present
+        password_lock: true
+        shell: "/sbin/nologin"
