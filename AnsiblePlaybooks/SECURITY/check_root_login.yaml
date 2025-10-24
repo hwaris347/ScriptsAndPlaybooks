@@ -1,0 +1,49 @@
+---
+- name: Check and disable PermitRootLogin on servers
+  hosts: all
+  gather_facts: yes
+  become: true
+  tasks:
+    - name: Get PermitRootLogin line from sshd_config
+      shell: "grep -E '^PermitRootLogin' /etc/ssh/sshd_config || echo 'Not Found'"
+      register: root_login_status
+      changed_when: false
+      failed_when: root_login_status.rc > 1
+
+    - name: Display current status
+      debug:
+        msg: >
+          {%- if root_login_status.stdout | regex_search('PermitRootLogin\\s+yes') -%}
+          Root login is ENABLED on {{ inventory_hostname }} ({{ root_login_status.stdout }})
+          {%- else -%}
+          Root login is DISABLED on {{ inventory_hostname }}
+          {%- endif -%}
+
+    - name: Disable PermitRootLogin if enabled
+      lineinfile:
+        path: /etc/ssh/sshd_config
+        regexp: '^#?\s*PermitRootLogin'
+        line: 'PermitRootLogin no'
+        state: present
+        backup: yes
+      when: root_login_status.stdout | regex_search('PermitRootLogin\\s+yes')
+      register: sshd_config_changed
+
+    - name: Validate sshd configuration
+      command: sshd -t
+      changed_when: false
+      when: sshd_config_changed.changed
+
+    - name: Restart sshd service if configuration changed
+      service:
+        name: "{{ 'ssh' if ansible_os_family == 'Debian' else 'sshd' }}"
+        state: restarted
+      when: sshd_config_changed.changed
+
+    - name: Log servers where root login was disabled
+      lineinfile:
+        path: "/tmp/root_login_disabled.txt"
+        line: "{{ ansible_date_time.iso8601 }} - {{ inventory_hostname }} - Root login disabled"
+        create: true
+      delegate_to: localhost
+      when: sshd_config_changed.changed
