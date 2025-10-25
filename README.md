@@ -14,7 +14,7 @@ The `ansible/` directory contains playbooks for:
 ### Prerequisites
 ```bash
 # Install Ansible
-sudo pacman -S ansible  # Arch Linux
+sudo dnf ansible  # Centos
 # or
 sudo apt install ansible  # Debian/Ubuntu
 ```
@@ -31,10 +31,6 @@ ansible-playbook -i inventory.ini playbook-name.yml
 
 # Dry run (check mode)
 ansible-playbook playbook-name.yml --check
-
-# Run specific tags
-ansible-playbook playbook-name.yml --tags "tag1,tag2"
-```
 
 ## Bash Scripts
 
@@ -68,10 +64,6 @@ Feel free to fork and adapt these scripts and playbooks for your own use.
 - Test playbooks in a safe environment first
 - Some scripts may require sudo/root privileges
 - Back up important data before running system-modifying scripts
-
-## License
-
-MIT License - Feel free to use and modify as needed.
 
 ## Author
 
